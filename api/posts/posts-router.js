@@ -36,27 +36,51 @@ router.post('/api/posts', (req, res) => {
     if (!title || !contents) {
         res.status(400).json({ message: "Please provide title and contents for the post" });
     } else {
-        Posts.insert({title, contents})
-            .then(newPost => {
-                res.status(201).json(newPost);
-            }).catch(err => {
+        Posts.insert({ title, contents })
+            .then(({ id }) => {
+                return Posts.findById(id);
+            }).then(newPost => {
+                res.status(201).json(newPost)
+            })
+            .catch(err => {
                 res.status(500).json({ message: "There was an error while saving the post to the database" })
             })
     }
 })
 
+router.put('/api/posts/:id', (req, res) => {
+    const { id } = req.params
+    const { title, contents } = req.body;
+
+    if (!id) {
+        res.status(404).json({ message: "The post with the specified ID does not exist" })
+    } else {
+        if (!title || !contents) {
+            res.status(400).json({ message: "Please provide title and contents for the post" })
+        } else {
+            Posts.update(id, req.body).then(updatedPost => {
+                res.status(200).json(updatedPost);
+            }).catch(err => {
+                res.status(500).json({message: "The post information could not be modified"});
+            })     
+        }
+
+    }
+})
+
+
 
 router.delete('/api/posts/:id', (req, res) => {
-    const { id } = req.params
-    
-    if(id){
+    const { id } = req.params;
+
+    if (id) {
         Posts.remove(id).then(id => {
             res.json(id)
-        }).catch(err =>{
-            res.status(500).json({message: "The post could not be removed"})
-        })    
-    }else{
-        res.status(404).json({message: "The post with the specified ID does not exist" });
+        }).catch(err => {
+            res.status(500).json({ message: "The post could not be removed" })
+        })
+    } else {
+        res.status(404).json({ message: "The post with the specified ID does not exist" });
     }
 })
 
