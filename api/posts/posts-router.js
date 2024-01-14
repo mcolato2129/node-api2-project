@@ -40,7 +40,7 @@ router.post('/api/posts', (req, res) => {
             .then(({ id }) => {
                 return Posts.findById(id);
             }).then(newPost => {
-                res.status(201).json(newPost)
+                res.status(201).json(newPost);
             })
             .catch(err => {
                 res.status(500).json({ message: "There was an error while saving the post to the database" })
@@ -74,8 +74,10 @@ router.delete('/api/posts/:id', (req, res) => {
     const { id } = req.params;
 
     if (id) {
-        Posts.remove(id).then(id => {
-            res.json(id)
+        Posts.remove(id).then(({ id }) => {
+            return Posts.findById(id);
+        }).then(deletedPost => {
+            res.status(200).json(deletedPost)
         }).catch(err => {
             res.status(500).json({ message: "The post could not be removed" })
         })
